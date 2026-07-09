@@ -1,31 +1,40 @@
 const Usuario = require('../models/usuarios');
 
-// POST /api/usuarios/registro
-const registrarUsuario = async (req, res) => {
+const crearUsuario = async (req, res) => {
     try {
-        
-        const nuevoUsuario = new Usuario(req.body); 
+        const nuevoUsuario = new Usuario(req.body);
         await nuevoUsuario.save();
-        
         res.json(nuevoUsuario);
     } catch (error) {
-        res.status(400).json({ error: 'Error al registrar el usuario' });
+        res.status(400).json({ error: 'Error al crear el usuario' });
     }
 };
 
-// GET /api/usuarios/perfil/:id
-const obtenerPerfilUsuario = async (req, res) => {
+const obtenerUsuarios = async (req, res) => {
     try {
-        
-        const usuario = await Usuario.findById(req.params.id).select('-password');
-        
+        const usuarios = await Usuario.find();
+        res.json(usuarios);
+    } catch (error) {
+        res.status(400).json({ error: 'Error al obtener usuarios' });
+    }
+};
+
+const actualizarUsuario = async (req, res) => {
+    try {
+        const usuario = await Usuario.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json(usuario);
     } catch (error) {
-        res.status(400).json({ error: 'Error al obtener el perfil' });
+        res.status(400).json({ error: 'Error al actualizar el usuario' });
     }
 };
 
-module.exports = {
-    registrarUsuario,
-    obtenerPerfilUsuario
+const eliminarUsuario = async (req, res) => {
+    try {
+        await Usuario.findByIdAndDelete(req.params.id);
+        res.json({ mensaje: 'Usuario eliminado' });
+    } catch (error) {
+        res.status(400).json({ error: 'Error al eliminar el usuario' });
+    }
 };
+
+module.exports = { crearUsuario, obtenerUsuarios, actualizarUsuario, eliminarUsuario };
