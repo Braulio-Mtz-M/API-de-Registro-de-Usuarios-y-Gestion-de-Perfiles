@@ -1,19 +1,24 @@
-const validarAppToken = (req, res, next) => {
-    // Buscamos el token en los headers (puedes llamarlo como prefieras, ej: x-app-token o authorization)
-    const token = req.header('x-app-token');
+const jwt = require('jsonwebtoken');
 
-    // Si no enviaron el token
-    if (!token) {
-        return res.status(401).json({ error: 'Acceso denegado. No se proporcionó un token de aplicación.' });
+const verificarJWT = (req, res, next) => {
+    // Por convención, el token se envía en el header 'Authorization' con el formato 'Bearer <token>'
+    const authHeader = req.header('Authorization');
+
+    if (!authHeader) {
+        return res.status(401).json({ error: 'Acceso denegado. Se requiere un token.' });
     }
 
-    // Si el token enviado no coincide con el de las variables de entorno
-    if (token !== process.env.APP_TOKEN) {
-        return res.status(403).json({ error: 'Acceso denegado. Token de aplicación inválido.' });
-    }
+    // Separamos la palabra "Bearer" del token real
+    const token = authHeader.split(' ')[1];
 
-    // Si el token es correcto, permitimos que la petición continúe
-    next();
+    try {
+        // Verificamos el token (como no tiene caducidad, solo fallará si fue alterado)
+        const decodificado = jwt.verify(token, process.env.JWT_SECRET);
+        req.usuario = decodificado; // Guardamos el ID del usuario en la request por si se ocupa
+        next();
+    } catch (error) {
+        res.status(403).json({ error: 'Token inválido o corrupto.' });
+    }
 };
 
-module.exports = validarAppToken;
+module.exports = verificarJWT;

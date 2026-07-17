@@ -9,7 +9,6 @@ const app = express();
 const PORT = 5100;
 
 app.use(express.json());
-app.use(validarAppToken);
 
 // DB connection
 connectDB();

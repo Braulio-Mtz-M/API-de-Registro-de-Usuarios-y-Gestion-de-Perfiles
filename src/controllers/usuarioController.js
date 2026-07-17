@@ -1,4 +1,29 @@
+const jwt = require('jsonwebtoken');
 const Usuario = require('../models/usuarios');
+
+const loginUsuario = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        
+        // Buscamos al usuario por su email
+        const usuario = await Usuario.findOne({ email });
+
+        // Validamos que exista y que la contraseña coincida
+        if (!usuario || usuario.password !== password) {
+            return res.status(401).json({ error: 'Credenciales inválidas' });
+        }
+
+        // Creamos el JWT SIN caducidad (no incluimos la propiedad expiresIn)
+        const token = jwt.sign(
+            { id: usuario._id }, 
+            process.env.JWT_SECRET
+        );
+
+        res.json({ mensaje: 'Login exitoso', token });
+    } catch (error) {
+        res.status(500).json({ error: 'Error al iniciar sesión' });
+    }
+};
 
 const crearUsuario = async (req, res) => {
     try {
@@ -37,4 +62,4 @@ const eliminarUsuario = async (req, res) => {
     }
 };
 
-module.exports = { crearUsuario, obtenerUsuarios, actualizarUsuario, eliminarUsuario };
+module.exports = { loginUsuario, crearUsuario, obtenerUsuarios, actualizarUsuario, eliminarUsuario};
