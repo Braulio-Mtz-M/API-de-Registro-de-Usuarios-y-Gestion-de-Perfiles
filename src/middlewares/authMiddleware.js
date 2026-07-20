@@ -1,20 +1,17 @@
 const jwt = require('jsonwebtoken');
 
 const verificarJWT = (req, res, next) => {
-    // Por convención, el token se envía en el header 'Authorization' con el formato 'Bearer <token>'
-    const authHeader = req.header('Authorization');
+    // 1. Cambiamos el nombre del header a 'app-token'
+    const token = req.header('app-token'); 
 
-    if (!authHeader) {
+    if (!token) {
         return res.status(401).json({ error: 'Acceso denegado. Se requiere un token.' });
     }
 
-    // Separamos la palabra "Bearer" del token real
-    const token = authHeader.split(' ')[1];
-
     try {
-        // Verificamos el token (como no tiene caducidad, solo fallará si fue alterado)
+        // 2. Quitamos el .split(' ')[1] porque el token ya viene limpio, sin la palabra "Bearer"
         const decodificado = jwt.verify(token, process.env.JWT_SECRET);
-        req.usuario = decodificado; // Guardamos el ID del usuario en la request por si se ocupa
+        req.usuario = decodificado;
         next();
     } catch (error) {
         res.status(403).json({ error: 'Token inválido o corrupto.' });
